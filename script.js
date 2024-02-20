@@ -44,9 +44,9 @@ const TETROMINOES = {
         [0, 1, 1]
     ],
     'J': [
-        [0, 1, 0],
-        [0, 1, 0],
-        [1, 1, 0]
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 1, 1]
     ],
     'T': [
         [1, 1, 1],
@@ -80,8 +80,7 @@ function generateRandomTetromino() {
     return {
         name,
         matrix,
-        row: 2,
-        //тут центрував по середині. Загальна ширина поля мінус розміри фігури, та поділити навпіл. Потім округлити до найближчього цілого.
+        row: 1,
         column: Math.floor((PLAYFIELD_COLUMNS - matrix[0].length) / 2),
     };
 }
@@ -107,6 +106,7 @@ function drawPlayField(){
     }
 }
 
+
 function drawTetromino(){
     const name = tetromino.name;
     const tetrominoMatrixSize = tetromino.matrix.length;
@@ -117,12 +117,11 @@ function drawTetromino(){
             const cellIndex = convertPositionToIndex(
                 tetromino.row + row,
                 tetromino.column + column
-                );
-                cells[cellIndex].classList.add(name);
+            );
+            cells[cellIndex].classList.add(name);
         }
     }
 }
-
 
 function draw(){
     cells.forEach(cell => cell.removeAttribute('class'));
@@ -137,7 +136,7 @@ function onKeyDown(e){
     // console.log(e);
     switch(e.key){
         case 'ArrowUp':
-            moveTetrominoUp();    
+            rotateTetromino();    
             break;
         case 'ArrowDown':
             moveTetrominoDown();    
@@ -152,10 +151,20 @@ function onKeyDown(e){
     draw();
 }
 
-function moveTetrominoUp(){
-    tetromino.row -= 1;
-    drawTetromino();
+function rotateTetromino(){
+    const originalMatrix = tetromino.matrix;
+    const rotatedMatrix = [];
+
+    for (let i = 0; i < originalMatrix[0].length; i++) {
+        rotatedMatrix.push([]);
+        for (let j = 0; j < originalMatrix.length; j++) {
+            rotatedMatrix[i].push(originalMatrix[j][i]);
+        }
+    }
+    rotatedMatrix.forEach(row => row.reverse());
+    tetromino.matrix = rotatedMatrix;
 }
+
 function moveTetrominoDown(){
     tetromino.row += 1;
     drawTetromino();
