@@ -1,0 +1,56 @@
+* {
+    margin: 0;
+}
+
+body {
+
+    background: 
+        linear-gradient(180deg, blue, yellow);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid {
+    background-color: rgb(105, 16, 62);
+    padding: 0.5vh;
+    display: grid;
+    grid-template-columns: repeat(10, auto);
+    gap: 0.5vh;
+}
+
+.grid > div {
+    height: min(4vh, 7vw);
+    width: min(4vh, 7vw);
+    background-color: rgba(211, 191, 191, 0.2);
+    border-radius: 0.5vh;
+}
+
+.grid .O {
+    background-color: rgb(191, 206, 109);
+}
+
+.grid .I {
+    background-color: rgb(144, 182, 240);
+}
+
+.grid .S {
+    background-color: rgb(212, 41, 41);
+}
+
+.grid .Z {
+    background-color: rgb(109, 206, 146);
+}
+
+.grid .L {
+    background-color: rgb(230, 155, 44);
+}
+
+.grid .J {
+    background-color: rgb(212, 48, 158);
+}
+
+.grid .T {
+    background-color: rgb(42, 65, 167);
+}
