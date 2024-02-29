@@ -10,11 +10,28 @@
 // 3. Реалізувати самостійний рух фігур до низу
 // 4. Прописати логіку і код розрахунку балів гри (1 ряд = 10; 2 ряди = 30; 3 ряди = 50; 4 = 100)
 
+// ДЗ №3
+// 1.Зробити розмітку висновків гри (Час гри, набрана кількість балів і т.п)
+// 2.Створити окрему кнопку рестарт що перезапускатиме гру посеред гри
+// 3.Додати клавіатуру на екрані браузеру 
 
+// Додаткове складніше завдання
+// 4.Показувати наступну фігуру що буде випадати
+// 5.Додати рівні при котрих збільшується швидкість падіння фігур
+// 6.Зберегти і виводити найкращий власний результат
 
-const scoreElement = document.querySelector('.score');
 const PLAYFIELD_COLUMNS = 10;
 const PLAYFIELD_ROWS    = 20;
+const btnRestart   = document.querySelector('.btn-restart');
+const scoreElement = document.querySelector('.score');
+const overlay = document.querySelector('.overlay');
+let isGameOver = false;
+let timedId = null;
+let isPaused = false;
+let playfield;
+let tetromino;
+let score = 0;
+
 const TETROMINO_NAMES = [
     'O',
     'J',
@@ -24,27 +41,16 @@ const TETROMINO_NAMES = [
     'T',
     'Z'
 ]
-
 const TETROMINOES = {
     'O': [
-        [1,1],
-        [1,1]
-    ],
-    'J': [
-        [1,0,0],
-        [1,1,1],
-        [0,0,0]
-    ],
-    'L': [
-        [0, 0, 1],
-        [1, 1, 1],
-        [0, 0, 0],
+        [1, 1],
+        [1, 1]
     ],
     'I': [
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 0]
     ],
     'S': [
         [0, 1, 1],
@@ -56,12 +62,41 @@ const TETROMINOES = {
         [0, 1, 1],
         [0, 0, 0]
     ],
+    'L': [
+        [0, 1, 0],
+        [0, 1, 0],
+        [0, 1, 1]
+    ],
+    'J': [
+        [0, 1, 0],
+        [0, 1, 0],
+        [1, 1, 0]
+    ],
     'T': [
         [1, 1, 1],
         [0, 1, 0],
         [0, 0, 0]
     ]
 }
+let cells;
+init();
+
+function init(){
+    score = 0;
+    scoreElement.innerHTML ='Score: ' + 0;
+    isGameOver = false;
+    generatePlayField();
+    generateTetromino();
+    cells = document.querySelectorAll('.grid div');
+    moveDown();
+    
+}
+
+btnRestart.addEventListener('click', function(){
+    document.querySelector('.grid').innerHTML = '';
+    overlay.style.display = 'none';
+    init();
+})
 
 function convertPositionToIndex(row, column){
     return row * PLAYFIELD_COLUMNS + column;
@@ -72,9 +107,7 @@ function getRandomElement(array){
     return array[randomIndex];
 }
 
-let playfield;
-let tetromino;
-let score = 0;
+
 
 function countScore(destroyRows){
     switch(destroyRows){
@@ -91,7 +124,7 @@ function countScore(destroyRows){
             score += 100;
                 break;
     }
-    scoreElement.innerHTML = score;
+    scoreElement.innerHTML = 'Score: ' + score;;
 }
 
 function generatePlayField(){
@@ -125,6 +158,10 @@ function placeTetromino(){
     const matrixSize = tetromino.matrix.length;
     for(let row = 0; row < matrixSize; row++){
         for(let column = 0; column < matrixSize; column++){
+            if(isOutsideOfTopboard(row)){
+                isGameOver = true;
+                return;
+            }
             if(tetromino.matrix[row][column]){
                 playfield[tetromino.row + row][tetromino.column + column] = tetromino.name;
             }
@@ -174,9 +211,6 @@ function findFilledRows(){
     return fillRows;
 }
 
-generatePlayField();
-generateTetromino();
-const cells = document.querySelectorAll('.grid div');
 
 function drawPlayField(){
     for(let row = 0; row < PLAYFIELD_ROWS; row++){
@@ -227,7 +261,6 @@ function draw(){
     drawTetromino();
 }
 
-
 function rotateTetromino(){
     const oldMatrix = tetromino.matrix;
     const rotatedMatrix = rotateMatrix(tetromino.matrix);
@@ -252,13 +285,16 @@ function rotate(){
 
 document.addEventListener('keydown', onKeyDown);
 function onKeyDown(e){
-    console.log(e.key);
+    // console.log(e.key);
     if(e.key == 'Escape'){
         togglePauseGame();
     }
     // if Escape
     if(!isPaused){
         switch(e.key){
+            case ' ':
+                dropTetrominoDown();
+                break;
             case 'ArrowUp':
                 rotate();
                 break;
@@ -278,8 +314,48 @@ function onKeyDown(e){
     draw();
 }
 
-
-
+document.addEventListener('DOMContentLoaded', function() {
+    const btnUp = document.getElementById('btn-up');
+    const btnLeft = document.getElementById('btn-left');
+    const btnDown= document.getElementById('btn-down');
+    const btnRight = document.getElementById('btn-right');
+    const btnReset = document.getElementById('btn-reset');
+    const btnPaused = document.getElementById('btn-paused');
+  
+    btnUp.addEventListener('click', function() {
+        rotateTetromino()
+        draw();
+    });
+    btnLeft.addEventListener('click', function() {
+        moveTetrominoLeft();
+        draw();
+    });
+    btnDown.addEventListener('click', function() {
+        moveTetrominoDown();
+        draw();
+    });
+    btnRight.addEventListener('click', function() {
+        moveTetrominoRight();
+        draw();
+    });
+    btnPaused.addEventListener('click', function() {
+        togglePauseGame();
+        draw();
+    });
+    btnReset.addEventListener('click', function() {
+        document.querySelector('.grid').innerHTML = '';
+        init();
+        // togglePauseGame()
+        // draw();
+    });
+  });
+  
+function dropTetrominoDown(){
+    while(isValid()){
+        tetromino.row++;
+    }
+    tetromino.row--;
+}
 
 function rotateMatrix(matrixTetromino){
     const N = matrixTetromino.length;
@@ -320,9 +396,16 @@ function moveDown(){
     draw();
     stopLoop();
     startLoop();
+    if(isGameOver){
+        gameOver();
+    }
 }
-let timedId = null;
-moveDown();
+
+function gameOver(){
+    stopLoop();
+    overlay.style.display = 'flex';
+}
+
 function startLoop(){
     if(!timedId){
         timedId = setTimeout(()=>{ requestAnimationFrame(moveDown) }, 700)
@@ -336,7 +419,6 @@ function stopLoop(){
     timedId = null;
 }
 
-let isPaused = false;
 
 function togglePauseGame(){
     if(isPaused === false){
